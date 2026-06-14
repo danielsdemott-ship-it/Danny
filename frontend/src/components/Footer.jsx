@@ -6,10 +6,13 @@ export default function Footer() {
       <div className="max-w-[1480px] mx-auto px-6 md:px-12">
         <div className="grid md:grid-cols-12 gap-10 items-end">
           <div className="md:col-span-5">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-2">
               <span className="font-serif-italic text-[28px] leading-none text-[var(--pw-gold)]">P</span>
               <span className="font-serif-display text-[22px] text-[var(--pw-cream)]">PhantomWorx</span>
             </div>
+            <span className="font-mono-tracked text-[9px] text-[var(--pw-gold)] ml-12 block mb-6">
+              Discreet Brokerage · Private Ventures
+            </span>
             <p className="font-serif-italic text-[18px] text-[var(--pw-cream-dim)] max-w-[420px] leading-[1.45]">
               Quiet introductions, sealed deals, lasting outcomes.
             </p>

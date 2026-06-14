@@ -34,8 +34,16 @@ export default function Nav() {
           className="flex items-center gap-3 group"
         >
           <span className="font-serif-italic text-[28px] leading-none text-[var(--pw-gold)]">P</span>
-          <span className="font-serif-display text-[20px] tracking-[0.02em] text-[var(--pw-cream)]">
-            PhantomWorx
+          <span className="flex flex-col leading-none">
+            <span className="font-serif-display text-[20px] tracking-[0.02em] text-[var(--pw-cream)]">
+              PhantomWorx
+            </span>
+            <span
+              data-testid="logo-tagline"
+              className="hidden sm:block font-mono-tracked text-[8.5px] text-[var(--pw-gold)] mt-1.5"
+            >
+              Discreet Brokerage · Private Ventures
+            </span>
           </span>
         </a>
 
