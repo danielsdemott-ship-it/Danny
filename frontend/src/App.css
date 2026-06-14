@@ -1,0 +1,7 @@
+/* PhantomWorx — app-level styles. Most styling lives in index.css via Tailwind + custom classes. */
+
+.App {
+    min-height: 100vh;
+    background: var(--pw-ink);
+    color: var(--pw-cream);
+}
