@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, BackgroundTasks
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
+
+from notify import notify_new_inquiry
 
 
 ROOT_DIR: Path = Path(__file__).parent
@@ -63,11 +65,23 @@ async def root() -> RootResponse:
 
 
 @api_router.post("/inquiries", response_model=InquiryResponse)
-async def create_inquiry(payload: InquiryCreate) -> InquiryResponse:
+async def create_inquiry(payload: InquiryCreate, background: BackgroundTasks) -> InquiryResponse:
     inquiry = Inquiry(**payload.model_dump())
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     await db.inquiries.insert_one(doc)
+
+    # Fire-and-forget email + SMS notification (never blocks the response)
+    background.add_task(
+        notify_new_inquiry,
+        name=inquiry.name,
+        email=inquiry.email,
+        intent=inquiry.intent,
+        origin=inquiry.origin,
+        room=inquiry.room,
+        inquiry_id=inquiry.id,
+    )
+
     return InquiryResponse(
         id=inquiry.id,
         received_at=inquiry.created_at,
