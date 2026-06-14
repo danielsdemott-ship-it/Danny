@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import "@/App.css";
 import Nav from "@/components/Nav";
@@ -22,10 +22,10 @@ function useReveal() {
     const els = document.querySelectorAll(".reveal");
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("in");
-            io.unobserve(e.target);
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            io.unobserve(entry.target);
           }
         });
       },
@@ -33,16 +33,20 @@ function useReveal() {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
+    // No dependencies — runs once on mount; IntersectionObserver is a stable browser global.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+}
+
+function useBackendPing(api) {
+  useEffect(() => {
+    axios.get(`${api}/`).catch(() => {});
+  }, [api]);
 }
 
 function App() {
   useReveal();
-
-  // Optional health ping
-  useEffect(() => {
-    axios.get(`${API}/`).catch(() => {});
-  }, []);
+  useBackendPing(API);
 
   return (
     <div className="App grain" data-testid="phantomworx-app">

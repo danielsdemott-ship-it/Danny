@@ -9,12 +9,12 @@ const PHRASES = [
 ];
 
 export default function Marquee() {
-  const items = [...PHRASES, ...PHRASES, ...PHRASES];
+  const items = PHRASES.concat(PHRASES, PHRASES);
   return (
     <section data-testid="marquee" className="relative py-10 border-y border-[var(--pw-line-soft)] overflow-hidden bg-[var(--pw-ink-2)]">
       <div className="marquee-track flex items-center gap-12 whitespace-nowrap">
         {items.map((p, i) => (
-          <React.Fragment key={i}>
+          <React.Fragment key={`${p}-${i}`}>
             <span className="font-serif-italic text-[var(--pw-cream-dim)] text-[18px] md:text-[22px]">
               {p}
             </span>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,16 +11,16 @@ import uuid
 from datetime import datetime, timezone
 
 
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR: Path = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+mongo_url: str = os.environ['MONGO_URL']
+client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-app = FastAPI(title="PhantomWorx API")
-api_router = APIRouter(prefix="/api")
+app: FastAPI = FastAPI(title="PhantomWorx API")
+api_router: APIRouter = APIRouter(prefix="/api")
 
 
 # ----- Models -----
@@ -50,14 +50,20 @@ class InquiryResponse(BaseModel):
     message: str
 
 
+class RootResponse(BaseModel):
+    name: str
+    status: str
+    motto: str
+
+
 # ----- Routes -----
-@api_router.get("/")
-async def root():
-    return {"name": "PhantomWorx", "status": "live", "motto": "Quietly."}
+@api_router.get("/", response_model=RootResponse)
+async def root() -> RootResponse:
+    return RootResponse(name="PhantomWorx", status="live", motto="Quietly.")
 
 
 @api_router.post("/inquiries", response_model=InquiryResponse)
-async def create_inquiry(payload: InquiryCreate):
+async def create_inquiry(payload: InquiryCreate) -> InquiryResponse:
     inquiry = Inquiry(**payload.model_dump())
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -70,7 +76,7 @@ async def create_inquiry(payload: InquiryCreate):
 
 
 @api_router.get("/inquiries", response_model=List[Inquiry])
-async def list_inquiries():
+async def list_inquiries() -> List[Inquiry]:
     docs = await db.inquiries.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     for d in docs:
         if isinstance(d.get('created_at'), str):
@@ -89,9 +95,9 @@ app.add_middleware(
 )
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_db_client() -> None:
     client.close()

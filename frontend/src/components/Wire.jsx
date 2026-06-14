@@ -40,7 +40,7 @@ export default function Wire() {
         <div className="border-t border-[var(--pw-line-soft)]">
           {NOTES.map((note, i) => (
             <a
-              key={i}
+              key={note.n}
               href="#inquire"
               data-testid={`wire-note-${i}`}
               className="wire-row group grid md:grid-cols-12 gap-8 py-10 border-b border-[var(--pw-line-soft)] reveal"

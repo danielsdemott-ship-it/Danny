@@ -21,7 +21,7 @@ export default function Hero() {
         </defs>
         {[...Array(14)].map((_, i) => (
           <path
-            key={i}
+            key={`silk-line-${i}`}
             d={`M -100 ${120 + i * 55} C 400 ${60 + i * 55}, 1100 ${280 + i * 35}, 1800 ${140 + i * 55}`}
             stroke="url(#goldFade)"
             strokeWidth={i % 3 === 0 ? "0.8" : "0.4"}

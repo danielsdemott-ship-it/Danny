@@ -27,7 +27,7 @@ export default function Ventures() {
         <div className="grid md:grid-cols-3 gap-6">
           {VENTURES.map((v, i) => (
             <article
-              key={i}
+              key={v.n}
               data-testid={`venture-${i + 1}`}
               className="lot-card reveal p-8 md:p-10 min-h-[180px] flex flex-col justify-between"
               style={{ transitionDelay: `${i * 60}ms` }}
