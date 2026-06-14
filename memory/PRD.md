@@ -22,7 +22,7 @@ A private brokerage / venture house brand site replicated from a Lovable preview
 - All interactive/visible elements have `data-testid` attributes.
 
 ## What's been implemented (2026-06-14)
-- ✅ Nav with scroll-blur state, anchor links, mobile menu, "Private Line" CTA
+- ✅ Nav with scroll-blur state, anchor links, mobile menu, "Private Line" CTA, **brand tagline** "Discreet Brokerage · Private Ventures"
 - ✅ Hero ("We work between the rooms most never enter.") with silk-line SVG decoration, gold/cream typography, two CTAs
 - ✅ Marquee of ethos phrases (auto-scrolling)
 - ✅ Ethos section with editorial copy + featured pull quote
@@ -33,9 +33,10 @@ A private brokerage / venture house brand site replicated from a Lovable preview
 - ✅ The Phantom Wire — 3 field notes (links to inquire)
 - ✅ House quote ("We don't sell visibility. We sell the absence of it.")
 - ✅ Inquire form (name, email, origin, intent, room) → POST `/api/inquiries`, success state with sealed acknowledgement
-- ✅ Footer with brand motto, atelier text, correspondence link
+- ✅ Footer with brand motto, **tagline**, atelier text, correspondence link
 - ✅ Backend endpoints: `GET /api/`, `POST /api/inquiries`, `GET /api/inquiries`
-- ✅ Tested end-to-end via testing agent — 100% backend, 100% frontend pass
+- ✅ Tested end-to-end via testing agent — **100% backend, 100% frontend pass** (iteration_1 + iteration_2 regression)
+- ✅ Code quality pass (iteration 2): extracted `useReveal` / `useBackendPing` hooks, split `Listings`→`LotCard`, split `Inquire`→`InquireFields`/`InquireSidebar`/`SuccessBlock`, stable React keys across Hero/Marquee/Wire/Ventures, added Python type hints across `server.py`
 
 ## Prioritized backlog
 ### P1
