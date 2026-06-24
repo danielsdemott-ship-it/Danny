@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import FastAPI, APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -13,6 +13,9 @@ from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from slowapi import Limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
 from notify import notify_new_inquiry
@@ -153,59 +156,6 @@ async def get_current_admin(credentials: HTTPAuthCredentials = Depends(security)
     return username
 
 
-# ----- Admin & Auth Models -----
-class AdminLogin(BaseModel):
-    username: str
-    password: str
-
-
-class AdminToken(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-
-# ----- Inventory Models -----
-class InventoryItem(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    category: str  # "Private Sourcing", "Strategic Introductions", "Acquisition Consulting", "Exclusive Opportunities", "Listings", "Ventures"
-    title: str
-    description: Optional[str] = None
-    price: Optional[float] = None
-    availability: str = "available"  # "available", "reserved", "sold"
-    image_url: Optional[str] = None
-    status_code: Optional[str] = None  # e.g., "01/06" for ventures
-    metadata: Optional[dict] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class InventoryItemCreate(BaseModel):
-    category: str = Field(..., min_length=1)
-    title: str = Field(..., min_length=1, max_length=200)
-    description: Optional[str] = Field(default=None, max_length=4000)
-    price: Optional[float] = None
-    availability: str = "available"
-    image_url: Optional[str] = None
-    status_code: Optional[str] = None
-    metadata: Optional[dict] = None
-
-
-class InventoryItemUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    price: Optional[float] = None
-    availability: Optional[str] = None
-    image_url: Optional[str] = None
-    status_code: Optional[str] = None
-    metadata: Optional[dict] = None
-
-
 # ----- Routes -----
 @api_router.get("/", response_model=RootResponse)
 async def root() -> RootResponse:
@@ -227,6 +177,10 @@ async def admin_login(credentials: AdminLogin) -> AdminToken:
 @api_router.post("/admin/register", response_model=dict)
 async def admin_register(credentials: AdminLogin) -> dict:
     """Register a new admin user (first time setup only)"""
+    admin_count = await db.admins.count_documents({})
+    if admin_count:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin registration is closed")
+
     existing = await db.admins.find_one({"username": credentials.username})
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Admin already exists")
@@ -313,7 +267,12 @@ async def delete_inventory_item(item_id: str, admin: str = Depends(get_current_a
 
 
 @api_router.post("/inquiries", response_model=InquiryResponse)
-async def create_inquiry(payload: InquiryCreate, background: BackgroundTasks) -> InquiryResponse:
+@limiter.limit("5/minute")
+async def create_inquiry(
+    request: Request,
+    payload: InquiryCreate,
+    background: BackgroundTasks,
+) -> InquiryResponse:
     inquiry = Inquiry(**payload.model_dump())
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -349,12 +308,9 @@ async def list_inquiries(admin: str = Depends(get_current_admin)) -> List[Inquir
 
 app.include_router(api_router)
 
-# Apply rate limiting to inquiry endpoint
 app.state.limiter = limiter
-@app.post("/api/inquiries")
-@limiter.limit("5/minute")
-async def rate_limited_inquiry(request):
-    pass
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

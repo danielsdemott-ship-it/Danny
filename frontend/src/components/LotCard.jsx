@@ -1,7 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function LotCard({ lot, transitionDelay }) {
   const reserved = lot.status === "Reserved";
+  const detailPath = lot.id ? `/detail/${lot.id}` : null;
+  const actionLabel = detailPath ? "View Details" : "Inquire Privately";
+  const Action = detailPath ? Link : "a";
+  const actionProps = detailPath ? { to: detailPath } : { href: "#inquire" };
+
   return (
     <article
       data-testid={`lot-${lot.n}`}
@@ -31,13 +37,13 @@ export default function LotCard({ lot, transitionDelay }) {
       <p className="font-mono-tracked text-[10px] text-[var(--pw-mute)] mb-10">
         {lot.meta}
       </p>
-      <a
-        href="#inquire"
+      <Action
+        {...actionProps}
         data-testid={`lot-${lot.n}-inquire`}
         className="link-gold"
       >
-        Inquire Privately <span className="arrow">→</span>
-      </a>
+        {actionLabel} <span className="arrow">→</span>
+      </Action>
     </article>
   );
 }

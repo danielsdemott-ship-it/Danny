@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import "@/App.css";
+import { API_BASE } from "@/lib/api";
+import { Toaster } from "@/components/ui/toaster";
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
@@ -16,9 +18,6 @@ import Inquire from "@/components/Inquire";
 import Footer from "@/components/Footer";
 import Admin from "@/components/Admin";
 import DetailPage from "@/components/DetailPage";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 function useReveal() {
   useEffect(() => {
@@ -49,7 +48,7 @@ function useBackendPing(api) {
 
 function App() {
   useReveal();
-  useBackendPing(API);
+  useBackendPing(API_BASE);
 
   return (
     <Router>
@@ -69,12 +68,13 @@ function App() {
               <Ventures />
               <Wire />
               <Quote />
-              <Inquire api={API} />
+              <Inquire api={API_BASE} />
             </main>
             <Footer />
           </div>
         } />
       </Routes>
+      <Toaster />
     </Router>
   );
 }
