@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import "@/App.css";
 import Nav from "@/components/Nav";
@@ -13,6 +14,8 @@ import Wire from "@/components/Wire";
 import Quote from "@/components/Quote";
 import Inquire from "@/components/Inquire";
 import Footer from "@/components/Footer";
+import Admin from "@/components/Admin";
+import DetailPage from "@/components/DetailPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -49,22 +52,30 @@ function App() {
   useBackendPing(API);
 
   return (
-    <div className="App grain" data-testid="phantomworx-app">
-      <Nav />
-      <main>
-        <Hero />
-        <Marquee />
-        <Ethos />
-        <Practice />
-        <Listings />
-        <Pillars />
-        <Ventures />
-        <Wire />
-        <Quote />
-        <Inquire api={API} />
-      </main>
-      <Footer />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/detail/:itemId" element={<DetailPage />} />
+        <Route path="/" element={
+          <div className="App grain" data-testid="phantomworx-app">
+            <Nav />
+            <main>
+              <Hero />
+              <Marquee />
+              <Ethos />
+              <Practice />
+              <Listings />
+              <Pillars />
+              <Ventures />
+              <Wire />
+              <Quote />
+              <Inquire api={API} />
+            </main>
+            <Footer />
+          </div>
+        } />
+      </Routes>
+    </Router>
   );
 }
 
