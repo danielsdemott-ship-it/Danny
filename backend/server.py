@@ -7,16 +7,13 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional
+from typing import Deque, Dict, List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from collections import defaultdict, deque
+from time import monotonic
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from slowapi import Limiter
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
-from slowapi.util import get_remote_address
 
 from notify import notify_new_inquiry
 
@@ -39,7 +36,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
 pwd_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security: HTTPBearer = HTTPBearer()
-limiter: Limiter = Limiter(key_func=get_remote_address)
+INQUIRY_RATE_LIMIT: int = 5
+INQUIRY_RATE_WINDOW_SECONDS: int = 60
+inquiry_rate_buckets: Dict[str, Deque[float]] = defaultdict(deque)
 
 
 # ----- Models -----
@@ -156,6 +155,31 @@ async def get_current_admin(credentials: HTTPAuthCredentials = Depends(security)
     return username
 
 
+def get_request_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
+def enforce_inquiry_rate_limit(request: Request) -> None:
+    now = monotonic()
+    bucket = inquiry_rate_buckets[get_request_ip(request)]
+
+    while bucket and now - bucket[0] > INQUIRY_RATE_WINDOW_SECONDS:
+        bucket.popleft()
+
+    if len(bucket) >= INQUIRY_RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many inquiries. Please wait before trying again.",
+        )
+
+    bucket.append(now)
+
+
 # ----- Routes -----
 @api_router.get("/", response_model=RootResponse)
 async def root() -> RootResponse:
@@ -267,12 +291,13 @@ async def delete_inventory_item(item_id: str, admin: str = Depends(get_current_a
 
 
 @api_router.post("/inquiries", response_model=InquiryResponse)
-@limiter.limit("5/minute")
 async def create_inquiry(
     request: Request,
     payload: InquiryCreate,
     background: BackgroundTasks,
 ) -> InquiryResponse:
+    enforce_inquiry_rate_limit(request)
+
     inquiry = Inquiry(**payload.model_dump())
     doc = inquiry.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -307,10 +332,6 @@ async def list_inquiries(admin: str = Depends(get_current_admin)) -> List[Inquir
 
 
 app.include_router(api_router)
-
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
