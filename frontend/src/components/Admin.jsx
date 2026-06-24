@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../hooks/use-toast';
+import { API_BASE, formatMoney } from '@/lib/api';
 import './Admin.css';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const ADMIN_CATEGORIES = [
+  'Automotive Sourcing',
+  'Real Estate - Luxury',
+  'Fine Art & Collectibles',
+  'Maritime Luxury',
+  'Private Aviation',
+  'Business & Investment',
+  'Exclusive Connections',
+  'Private Sourcing',
+  'Strategic Introductions',
+  'Acquisition Consulting',
+  'Exclusive Opportunities',
+  'Listings',
+  'Ventures',
+];
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('admin_token'));
@@ -53,6 +68,42 @@ export default function Admin() {
       toast({ title: 'Login successful', description: 'Welcome to admin dashboard' });
     } catch (error) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!loginForm.username || !loginForm.password) {
+      toast({ title: 'Missing credentials', description: 'Enter a username and password first.', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const registerResponse = await fetch(`${API_BASE}/admin/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm),
+      });
+
+      if (!registerResponse.ok) {
+        const error = await registerResponse.json().catch(() => ({}));
+        throw new Error(error.detail || 'Unable to create admin');
+      }
+
+      const loginResponse = await fetch(`${API_BASE}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginForm),
+      });
+
+      if (!loginResponse.ok) throw new Error('Admin created, but login failed');
+
+      const data = await loginResponse.json();
+      localStorage.setItem('admin_token', data.access_token);
+      setIsAuthenticated(true);
+      setLoginForm({ username: '', password: '' });
+      toast({ title: 'Admin created', description: 'First admin account is ready.' });
+    } catch (error) {
+      toast({ title: 'Registration failed', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -223,7 +274,10 @@ export default function Admin() {
             />
             <button type="submit" className="admin-btn">Login</button>
           </form>
-          <p className="admin-note">First time? Register with your credentials above.</p>
+          <button type="button" className="admin-btn admin-btn-secondary" onClick={handleRegister}>
+            Create First Admin
+          </button>
+          <p className="admin-note">Registration is available only before the first admin exists.</p>
         </div>
       </div>
     );
@@ -266,12 +320,9 @@ export default function Admin() {
                     disabled={!!editingItem}
                   >
                     <option value="">Select Category</option>
-                    <option value="Private Sourcing">Private Sourcing</option>
-                    <option value="Strategic Introductions">Strategic Introductions</option>
-                    <option value="Acquisition Consulting">Acquisition Consulting</option>
-                    <option value="Exclusive Opportunities">Exclusive Opportunities</option>
-                    <option value="Listings">Listings</option>
-                    <option value="Ventures">Ventures</option>
+                    {ADMIN_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -375,7 +426,7 @@ export default function Admin() {
                       <h3>{item.title}</h3>
                       <p className="item-category">{item.category}</p>
                       {item.description && <p className="item-desc">{item.description}</p>}
-                      {item.price && <p className="item-price">${item.price.toFixed(2)}</p>}
+                      {item.price && <p className="item-price">{formatMoney(item.price)}</p>}
                       <p className={`item-availability item-${item.availability}`}>
                         {item.availability.charAt(0).toUpperCase() + item.availability.slice(1)}
                       </p>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
+import { API_BASE, formatMoney } from '@/lib/api';
 import './DetailPage.css';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 export default function DetailPage() {
   const { itemId } = useParams();
@@ -116,9 +115,7 @@ export default function DetailPage() {
                 <h2>Valuation</h2>
                 <div className="detail-price">
                   <p className="detail-price-label">Valued at</p>
-                  <p className="detail-price-value">
-                    ${(item.price / 1000000).toFixed(2)}M
-                  </p>
+                  <p className="detail-price-value">{formatMoney(item.price)}</p>
                 </div>
               </section>
             )}
@@ -175,9 +172,7 @@ export default function DetailPage() {
                 >
                   <h3>{related.title}</h3>
                   {related.price && (
-                    <p className="related-price">
-                      ${(related.price / 1000000).toFixed(1)}M
-                    </p>
+                    <p className="related-price">{formatMoney(related.price)}</p>
                   )}
                   <span className={`related-availability related-${related.availability}`}>
                     {related.availability.charAt(0).toUpperCase() + related.availability.slice(1)}
