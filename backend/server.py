@@ -30,7 +30,22 @@ app: FastAPI = FastAPI(title="PhantomWorx API")
 api_router: APIRouter = APIRouter(prefix="/api")
 
 # Auth configuration
-SECRET_KEY: str = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+ENVIRONMENT: str = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
+IS_PRODUCTION: bool = ENVIRONMENT in {"prod", "production"}
+SECRET_KEY: str = os.environ.get("SECRET_KEY", "")
+if IS_PRODUCTION and not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY must be set in production")
+if not SECRET_KEY:
+    SECRET_KEY = "development-only-secret-key"
+
+CORS_ORIGINS: List[str] = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+if IS_PRODUCTION and (not CORS_ORIGINS or "*" in CORS_ORIGINS):
+    raise RuntimeError("CORS_ORIGINS must list explicit production origins")
+
 ALGORITHM: str = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
@@ -336,7 +351,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

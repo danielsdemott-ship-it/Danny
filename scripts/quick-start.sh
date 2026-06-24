@@ -22,6 +22,7 @@ SECRET_KEY=your-secret-key-here-change-in-production
 
 # CORS
 CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
+ENVIRONMENT=development
 
 # Email (Optional)
 RESEND_API_KEY=re_xxxxx
@@ -125,7 +126,7 @@ echo ""
 echo "🔐 Admin Credentials:"
 echo "   Username: admin"
 echo "   Password: phantom"
-echo "   ⚠ Change immediately after first login!"
+echo "   ⚠ Local development only. Use ADMIN_PASSWORD for production."
 echo ""
 echo "📋 Process IDs:"
 echo "   Backend:  $BACKEND_PID"

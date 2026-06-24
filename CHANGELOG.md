@@ -3,7 +3,7 @@
 ## 🎯 New Features Implemented
 
 ### 1. **Inventory Management System**
-- ✅ Backend database schema for inventory items (48+ items across 6 categories)
+- ✅ Backend database schema for inventory items (84 items across 7 categories)
 - ✅ 12 inventory items per category:
   - Private Sourcing (founder acquisitions, real estate, fintech, etc.)
   - Strategic Introductions (investor networks, partnerships, etc.)
@@ -52,7 +52,7 @@
 
 ### 6. **Database & Seeding**
 - ✅ `seed.py` script to initialize database with:
-  - 48 inventory items (12 per category)
+  - 84 inventory items (12 per category)
   - Default admin user (username: admin, password: phantom)
 - ✅ Automatic timestamps and ID generation
 - ✅ Flexible metadata storage
@@ -148,7 +148,7 @@ cd frontend && npm start
 ## 📦 Dependencies Added
 
 **Backend:**
-- `slowapi` — Rate limiting
+- Built-in inquiry rate limiting
 - Already had: python-jose, passlib, bcrypt
 
 **Frontend:**

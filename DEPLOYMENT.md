@@ -12,15 +12,20 @@ MONGO_URL=mongodb+srv://user:password@cluster.mongodb.net/?retryWrites=true
 DB_NAME=phantomworx
 
 # Authentication
-SECRET_KEY=your-secret-key-change-in-production-generate-with-openssl
+SECRET_KEY=generate-with-openssl-rand-hex-32
+ENVIRONMENT=production
 
 # CORS Origins
-CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
+CORS_ORIGINS=https://yourdomain.com
 
 # Email Notifications (Optional - for Resend or SendGrid)
 RESEND_API_KEY=re_xxxxx
 # OR
 SENDGRID_API_KEY=SG.xxxxx
+
+# Optional seed credentials. Required if seed.py creates the production admin.
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=use-a-strong-unique-password
 ```
 
 Generate a secure secret key:
@@ -30,7 +35,7 @@ openssl rand -hex 32
 
 ### 2. Database Initialization
 
-Run the seed script to populate inventory with 12 items per category and create admin user:
+Run the seed script to populate inventory with 12 items per category. In production, set `ADMIN_PASSWORD` first if you want the script to create the first admin account:
 
 ```bash
 cd backend
@@ -39,18 +44,20 @@ python3 seed.py
 
 Output will show:
 ```
-✓ Added 48 inventory items
-  • Private Sourcing: 12 items
-  • Strategic Introductions: 12 items
-  • Acquisition Consulting: 12 items
-  • Exclusive Opportunities: 12 items
+✓ Added 84 inventory items
+  • Automotive Sourcing: 12 items
+  • Real Estate - Luxury: 12 items
+  • Fine Art & Collectibles: 12 items
+  • Maritime Luxury: 12 items
+  • Private Aviation: 12 items
+  • Business & Investment: 12 items
+  • Exclusive Connections: 12 items
 
 ✓ Admin user 'admin' created
-  Default password: phantom
-  ⚠ Please change this password after first login!
+  Password loaded from ADMIN_PASSWORD
 ```
 
-**⚠ Important**: Change the default admin password immediately after first login!
+For an empty database, you can also skip admin seeding and create the first admin at `/admin`. Registration closes automatically after one admin exists.
 
 ### 3. Start Development
 
@@ -78,8 +85,7 @@ The app will be available at:
 ### Admin Dashboard (`/admin`)
 
 **Login**
-- Default username: `admin`
-- Default password: `phantom` (change immediately)
+- Create the first admin at `/admin` before any admin exists, or seed one with `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
 - JWT token valid for 24 hours
 
 **Inventory Management**

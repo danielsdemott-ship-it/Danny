@@ -4,7 +4,7 @@ A luxury brand website replicating a private brokerage and venture capital platf
 
 ## ✨ What's New (June 2026)
 
-- **✅ Inventory System**: 48 curated opportunities across 6 categories (12 each)
+- **✅ Inventory System**: 84 curated opportunities across 7 categories (12 each)
 - **✅ Admin Dashboard**: Secure management interface for inventory and inquiries
 - **✅ JWT Authentication**: Bcrypt hashing + 24-hour token expiration
 - **✅ Detail Pages**: Dynamic routing for each opportunity
@@ -37,8 +37,9 @@ Create `backend/.env`:
 ```env
 MONGO_URL=mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true
 DB_NAME=phantomworx
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=generate-with-openssl-rand-hex-32
 CORS_ORIGINS=http://localhost:3000,https://yourdomain.com
+ENVIRONMENT=development
 ```
 
 ### 3. Seed Database
@@ -49,10 +50,10 @@ python3 seed.py
 
 Output:
 ```
-✓ Added 48 inventory items
+✓ Added 84 inventory items
 ✓ Admin user 'admin' created
   Default password: phantom
-  ⚠ Please change this password after first login!
+  ⚠ Local development only. Use ADMIN_PASSWORD for production seeding.
 ```
 
 ### 4. Start Development
@@ -74,7 +75,7 @@ Visit:
 ## 📚 Features
 
 ### Public
-- Browse 48 curated inventory items
+- Browse 84 curated inventory items
 - View detailed opportunity pages
 - Submit private inquiries (rate-limited)
 - Social sharing with OG tags
@@ -188,7 +189,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for:
 - Pydantic v2 (validation)
 - python-jose (JWT)
 - passlib + bcrypt (auth)
-- slowapi (rate limiting)
+- Built-in inquiry rate limiting
 
 **Database**
 - MongoDB (document storage)
@@ -233,7 +234,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for more issues.
 
 ## 📝 Next Steps
 
-- [ ] Change admin password from default (phantom)
+- [ ] Create production admin with a strong password
 - [ ] Configure email notifications (RESEND_API_KEY or SENDGRID_API_KEY)
 - [ ] Set up custom domain
 - [ ] Enable analytics
@@ -256,4 +257,3 @@ Private — PhantomWorx LLC
 **Status**: Production Ready ✨
 **Last Updated**: June 24, 2026
 **Build Version**: 1.0.0
-

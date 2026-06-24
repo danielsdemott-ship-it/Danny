@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { API_BASE, formatMoney } from '@/lib/api';
 import './Admin.css';
@@ -38,15 +38,6 @@ export default function Admin() {
   const { toast } = useToast();
 
   const token = localStorage.getItem('admin_token');
-
-  useEffect(() => {
-    if (isAuthenticated && token) {
-      fetchInventory();
-      if (currentTab === 'inquiries') {
-        fetchInquiries();
-      }
-    }
-  }, [isAuthenticated, currentTab, token]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -115,7 +106,7 @@ export default function Admin() {
     setInquiries([]);
   };
 
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/inventory`);
       if (!response.ok) throw new Error('Failed to fetch inventory');
@@ -124,9 +115,9 @@ export default function Admin() {
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
-  };
+  }, [toast]);
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/inquiries`, {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -137,7 +128,16 @@ export default function Admin() {
     } catch (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
-  };
+  }, [toast, token]);
+
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      fetchInventory();
+      if (currentTab === 'inquiries') {
+        fetchInquiries();
+      }
+    }
+  }, [isAuthenticated, currentTab, token, fetchInventory, fetchInquiries]);
 
   const handleAddInventory = async (e) => {
     e.preventDefault();

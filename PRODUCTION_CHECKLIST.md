@@ -16,7 +16,7 @@
 - [ ] JWT SECRET_KEY is securely generated (`openssl rand -hex 32`)
 - [ ] CORS_ORIGINS properly configured (not `*` in production)
 - [ ] Rate limiting configured and tested
-- [ ] Admin credentials changed from defaults (admin/phantom)
+- [ ] Production admin created with a strong unique password
 - [ ] No PII or sensitive data in database seeds
 - [ ] SSL/HTTPS certificates ready
 - [ ] Firewall rules configured (only expose ports 80/443)
@@ -98,9 +98,9 @@ ssh user@server "cd /app && pip install -r requirements.txt"
 python3 /app/backend/seed.py
 
 # Output should show:
-# ✓ Added 72 inventory items
+# ✓ Added 84 inventory items
 # ✓ Admin user 'admin' created
-# ⚠ Please change this password after first login!
+# ✓ Password loaded from ADMIN_PASSWORD
 ```
 
 #### 1.4 Verify Backend
@@ -218,17 +218,17 @@ done
 ```bash
 # Check inventory was seeded
 mongosh "mongodb+srv://..." --eval "db.inventory.countDocuments()"
-# Should return: 72
+# Should return: 84
 
 # Check admin user exists
 mongosh "mongodb+srv://..." --eval "db.admins.countDocuments()"
 # Should return: 1
 ```
 
-#### 3.4 Change Default Admin Credentials
+#### 3.4 Verify Admin Credentials
 ```bash
-# Visit /admin and login with admin/phantom
-# Change password immediately after login
+# Visit /admin and log in with the production admin credentials
+# If no admin was seeded, create the first admin from /admin
 ```
 
 ---
@@ -350,8 +350,8 @@ aws cloudfront create-invalidation --distribution-id $ID --paths "/*"
 - [ ] Verify database has inventory collection
 
 **Rate limiting not working**
-- [ ] Check slowapi is properly configured
-- [ ] Verify Redis is running (if using Redis backend)
+- [ ] Confirm all production traffic forwards the correct client IP in `X-Forwarded-For`
+- [ ] Verify the app process has not restarted between requests
 - [ ] Test with: `for i in {1..10}; do curl /api/inquiries; done`
 
 ---

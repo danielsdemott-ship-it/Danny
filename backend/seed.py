@@ -17,6 +17,8 @@ load_dotenv(ROOT_DIR / '.env')
 
 MONGO_URL = os.environ['MONGO_URL']
 DB_NAME = os.environ['DB_NAME']
+ENVIRONMENT = os.environ.get("ENVIRONMENT", os.environ.get("APP_ENV", "development")).lower()
+IS_PRODUCTION = ENVIRONMENT in {"prod", "production"}
 
 # Sample inventory data - 12 items per category
 # PhantomWorx: Discrete sourcing for ultra-wealthy buyers
@@ -168,9 +170,17 @@ async def seed_inventory():
         client.close()
 
 
-async def create_admin_user(username: str = "admin", password: str = "phantom"):
+async def create_admin_user(username: str | None = None, password: str | None = None):
     """Create initial admin user for authentication."""
     from passlib.context import CryptContext
+
+    username = username or os.environ.get("ADMIN_USERNAME", "admin")
+    password = password or os.environ.get("ADMIN_PASSWORD")
+
+    if IS_PRODUCTION and not password:
+        raise RuntimeError("ADMIN_PASSWORD must be set before seeding a production admin")
+
+    password = password or "phantom"
     
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     
@@ -193,8 +203,11 @@ async def create_admin_user(username: str = "admin", password: str = "phantom"):
         })
         
         print(f"✓ Admin user '{username}' created")
-        print(f"  Default password: {password}")
-        print(f"  ⚠ Please change this password after first login!")
+        if IS_PRODUCTION:
+            print("  Password loaded from ADMIN_PASSWORD")
+        else:
+            print(f"  Default password: {password}")
+            print(f"  ⚠ Please change this password after first login!")
         
     except Exception as e:
         print(f"✗ Error creating admin user: {e}")

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
 import { API_BASE, formatMoney } from '@/lib/api';
@@ -12,11 +12,7 @@ export default function DetailPage() {
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
 
-  useEffect(() => {
-    fetchItem();
-  }, [itemId]);
-
-  const fetchItem = async () => {
+  const fetchItem = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE}/inventory/${itemId}`);
@@ -37,7 +33,11 @@ export default function DetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [itemId, navigate, toast]);
+
+  useEffect(() => {
+    fetchItem();
+  }, [fetchItem]);
 
   if (loading) {
     return (

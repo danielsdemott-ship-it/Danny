@@ -6,7 +6,7 @@ set -e  # Exit on error
 
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║  PhantomWorx — Pre-Deployment Build & Package Script      ║"
-echo "║  Status: PRODUCTION READY                                 ║"
+echo "║  Status: LOCAL READINESS CHECK                            ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -200,6 +200,7 @@ if [ $ERRORS -eq 0 ]; then
     echo "     • MONGO_URL (production database)"
     echo "     • SECRET_KEY (generate with: openssl rand -hex 32)"
     echo "     • CORS_ORIGINS (your domain)"
+    echo "     • ADMIN_PASSWORD (if seeding the first admin)"
     echo ""
     echo "  2. Deploy backend to your server/cloud provider"
     echo "  3. Deploy frontend to CDN/static host"
